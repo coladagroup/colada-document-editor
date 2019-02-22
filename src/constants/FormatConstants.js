@@ -1,0 +1,7 @@
+export const A3 = 'A3'
+export const A4 = 'A4'
+export const A5 = 'A5'
+export const LETTER = 'LETTER'
+export const LEGAL = 'LEGAL'
+export const ORIENTATION_PORTRAIT = 'PORTRAIT'
+export const ORIENTATION_LANDSCAPE = 'LANDSCAPE'

@@ -1,0 +1,52 @@
+{
+    "parser": "babel-eslint",
+    "plugins": [
+        "react",
+        "import"
+    ],
+    "extends": [
+        "airbnb",
+        "plugin:import/errors",
+        "plugin:import/warnings"
+    ],
+    "rules": {
+        "no-else-return": [0],
+        "no-confusing-arrow": [0],
+        "arrow-parens": [0],
+        "no-console": [0],
+        "operator-linebreak": [0],
+        "jsx-first-prop-new-line": [0],
+        "react/jsx-first-prop-new-line": [0],
+        "prefer-destructuring": "off",
+        "import/prefer-default-export": "off",
+        "linebreak-style": [0, "unix"],
+        "no-param-reassign": [1],
+        "max-len": ["error", 120],
+        "no-shadow": [0],
+        "semi": ["error", "never"],
+        "comma-dangle": "off",
+        "object-curly-newline": [0],
+        "function-paren-newline": [0],
+        "import/no-extraneous-dependencies": [0],
+        "import/no-unresolved": [0],
+        "import/no-webpack-loader-syntax": [0],
+        "react/prop-types": [2, { "ignore": ["children"] }],
+        "react/no-unused-prop-types": [1],
+        "react/jsx-filename-extension": [1, { "extensions": [".js", ".react.js"] }],
+        "react/forbid-prop-types": [0],
+        "react/require-default-props": [0],
+        "react/no-array-index-key": [0],
+        "react/jsx-max-props-per-line": [1, { "maximum": 3 }],
+        "react/jsx-curly-brace-presence": [0],
+        "react/no-danger": [0],
+        "react/destructuring-assignment": [0]
+    },
+    "env": {
+        "browser": true,
+        "jest": true,
+        "es6": true
+    },
+    "globals": {
+        "WJ": true
+    }
+}
