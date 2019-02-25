@@ -1,15 +1,34 @@
 import React, { useReducer, useEffect } from 'react'
 import TextField from '@material-ui/core/TextField'
+import Button from '@material-ui/core/Button'
 import { ImmortalStorage, IndexedDbStore, LocalStorageStore, SessionStorageStore } from 'immortal-db'
+import isEqual from 'lodash/isEqual'
+import find from 'lodash/find'
+import FroalaEditor from 'react-froala-wysiwyg'
 
 import Ribbon from './Ribbon.react'
 import SubRibbon from './SubRibbon.react'
 import Sheet from './Sheet.react'
 import Settings from './Settings.react'
 import * as Format from '../constants/FormatConstants'
+import { EDITOR_FEATURES, QUICKINSERT_BUTTONS, ALLOWED_STYLE_PROPS, KEY } from '../constants/EditorConstants'
+
+const uuidv1 = require('uuid/v1')
 
 const stores = [IndexedDbStore, LocalStorageStore, SessionStorageStore]
 const db = new ImmortalStorage(stores)
+
+const FROALA_CONFIG = {
+  charCounterCount: false,
+  toolbarButtons: [...EDITOR_FEATURES],
+  quickInsertButtons: [...QUICKINSERT_BUTTONS],
+  linkAutoPrefix: '',
+  htmlRemoveTags: [],
+  htmlAllowedStyleProps: ALLOWED_STYLE_PROPS,
+  htmlUntouched: true,
+  toolbarInline: true,
+  key: KEY
+}
 
 const initialState = {
   lock: false,
@@ -18,11 +37,9 @@ const initialState = {
   name: '',
   format: Format.A4,
   orientation: Format.ORIENTATION_PORTRAIT,
-  layout: [
-    { i: 'a', x: 0, y: 0, w: 1, h: 2 },
-    { i: 'b', x: 1, y: 0, w: 3, h: 2, minW: 2, maxW: 4 },
-    { i: 'c', x: 4, y: 0, w: 1, h: 2 }
-  ]
+  layout: null,
+  selectedCell: null,
+  content: ''
 }
 
 function reducer(state, action) {
@@ -39,6 +56,10 @@ function reducer(state, action) {
       return { ...state, layout: action.value, save: true }
     case 'init':
       return { ...state, ...action.value, settings: false }
+    case 'selectedCell':
+      return { ...state, selectedCell: action.value, content: action.value ? action.value.content : '' }
+    case 'content':
+      return { ...state, content: action.value }
     default:
       throw new Error()
   }
@@ -62,7 +83,7 @@ export default function Index() {
     fetchData()
   }, [])
 
-  const { lock, save, settings, name, format, orientation, layout } = state
+  const { lock, save, settings, name, format, orientation, layout, selectedCell, content } = state
 
   async function handleSettingsSave(value) {
     await db.set('document', JSON.stringify({
@@ -79,12 +100,46 @@ export default function Index() {
     dispatch({ type: 'settings', value: false })
   }
 
+  function applyContentHandler() {
+    const newCell = { ...selectedCell, content }
+
+    dispatch({ type: 'layout', value: layout.map(item => item.i === selectedCell.i ? newCell : item) })
+    dispatch({ type: 'selectedCell', value: newCell })
+  }
+
+  function discardHandler() {
+    dispatch({ type: 'content', value: selectedCell.content })
+  }
+
+  function handleContentChange(value) {
+    dispatch({ type: 'content', value })
+  }
+
   function handleNameChange(e) {
     dispatch({ type: 'name', value: e.target.value })
   }
 
-  function handleLayoutChange(value) {
-    dispatch({ type: 'layout', value })
+  function handleCellSelect(value) {
+    dispatch({ type: 'selectedCell', value })
+  }
+
+  function handleLayoutChange(newLayout) {
+    if (layout && !isEqual(layout, newLayout)) {
+      dispatch({
+        type: 'layout',
+        value: newLayout.map((item) => {
+          let result = item
+
+          const prevItem = find(layout, data => data.i === item.i)
+
+          if (prevItem) {
+            result = { ...item, content: prevItem.content }
+          }
+
+          return result
+        })
+      })
+    }
   }
 
   function handleSettings() {
@@ -97,8 +152,18 @@ export default function Index() {
     dispatch({ type: 'save', value: false })
   }
 
+  function addCellHandler() {
+    dispatch({ type: 'layout', value: [...layout, { i: uuidv1(), x: 0, y: 0, w: 2, h: 2 }] })
+  }
+
   function handleLock(value) {
     dispatch({ type: 'lock', value })
+
+    if (!value) {
+      fetchData()
+
+      dispatch({ type: 'selectedCell', value: null })
+    }
   }
 
   return (
@@ -110,6 +175,7 @@ export default function Index() {
         lock={lock}
         save={save}
         lockHandler={handleLock}
+        addHandler={addCellHandler}
         saveHandler={handleSave}
         settingsHandler={handleSettings}
       />
@@ -129,6 +195,7 @@ export default function Index() {
                   orientation={orientation}
                   layout={layout}
                   layoutChangeHandler={handleLayoutChange}
+                  selectHandler={handleCellSelect}
                 />
               </div>
 
@@ -145,6 +212,39 @@ export default function Index() {
                   InputLabelProps={{ shrink: true }}
                   onChange={handleNameChange}
                 />
+
+                {selectedCell && (
+                  <div className="m-t-20">
+
+                    <div className="editor-toolbox-content-label">Content</div>
+
+                    <FroalaEditor
+                      tag="textarea"
+                      config={FROALA_CONFIG}
+                      model={content || ''}
+                      onModelChange={handleContentChange}
+                    />
+
+                    <div className="m-t-10 flex-end-box align-center-box">
+
+                      <Button
+                        color="primary"
+                        onClick={discardHandler}
+                      >
+                        {'Discard'}
+                      </Button>
+
+                      <Button
+                        disabled={selectedCell.content === content}
+                        color="primary"
+                        variant="contained"
+                        onClick={applyContentHandler}
+                      >
+                        {'Apply'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

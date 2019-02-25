@@ -7,9 +7,10 @@ import SettingsIcon from '@material-ui/icons/Settings'
 import EditIcon from '-!react-svg-loader!../svg/Edit.svg'
 import ExitIcon from '-!react-svg-loader!../svg/Exit.svg'
 import SaveIcon from '-!react-svg-loader!../svg/Save.svg'
+import AddIcon from '-!react-svg-loader!../svg/Add.svg'
 import SaveDisabledIcon from '-!react-svg-loader!../svg/SaveDisabled.svg'
 
-export default function SubRibbon({ lock, save, lockHandler, saveHandler, settingsHandler }) {
+export default function SubRibbon({ lock, save, lockHandler, addHandler, saveHandler, settingsHandler }) {
   return (
     <div className="sub-ribbon-container row-box align-center-box">
 
@@ -28,6 +29,14 @@ export default function SubRibbon({ lock, save, lockHandler, saveHandler, settin
 
       {lock && (
         <Fragment>
+
+          <Button
+            color="primary"
+            onClick={() => addHandler()}
+          >
+            <AddIcon />
+            <div className="nowrap m-l-10">ADD CELL</div>
+          </Button>
 
           <Button
             color="primary"
@@ -55,6 +64,7 @@ SubRibbon.propTypes = {
   lock: PropTypes.bool,
   save: PropTypes.bool,
   lockHandler: PropTypes.func.isRequired,
+  addHandler: PropTypes.func.isRequired,
   saveHandler: PropTypes.func.isRequired,
   settingsHandler: PropTypes.func.isRequired
 }

@@ -1,30 +1,72 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import RGL, { WidthProvider } from 'react-grid-layout'
+import GridLayout from 'react-grid-layout'
+import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close'
+import filter from 'lodash/filter'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
 import * as Format from '../constants/FormatConstants'
 
-const GridLayout = WidthProvider(RGL)
+export default function Sheet({ lock, format, orientation, layout, layoutChangeHandler, selectHandler }) {
+  let width = 0
 
-export default function Sheet({ lock, format, orientation, layout, layoutChangeHandler }) {
+  if (format === Format.A4) {
+    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1122 : 793
+  } else if (format === Format.A3) {
+    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1587 : 1122
+  } else if (format === Format.A5) {
+    width = orientation === Format.ORIENTATION_LANDSCAPE ? 793 : 559
+  } else if (format === Format.LETTER) {
+    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1058 : 816
+  } else if (format === Format.LEGAL) {
+    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1349 : 816
+  }
+
+  function cellDeleteHandler(data) {
+    layoutChangeHandler(filter(layout, item => item.i !== data.i))
+  }
+
+  function createElement(data) {
+    return lock ? (
+      <div
+        key={data.i}
+        data-grid={data}
+        className="relative"
+        role="button"
+        tabIndex={0}
+        onClick={() => selectHandler(data)}
+        onKeyPress={() => selectHandler(data)}
+      >
+        <div dangerouslySetInnerHTML={{ __html: data.content || '' }} />
+        <IconButton classes={{ root: 'cell-delete-button' }} onClick={() => cellDeleteHandler(data)}>
+          <CloseIcon />
+        </IconButton>
+      </div>
+    ) : (
+      <div key={data.i} data-grid={data}>
+        <div dangerouslySetInnerHTML={{ __html: data.content || '' }} />
+      </div>
+    )
+  }
+
   return (
     <div className={`${format} ${orientation === Format.ORIENTATION_LANDSCAPE ? orientation : ''}`}>
       <div className="sheet">
         <GridLayout
           className="layout"
-          layout={layout}
+          preventCollision
+          width={width}
+          layout={layout || []}
           cols={12}
           rowHeight={30}
           isDraggable={lock}
           isResizable={lock}
-          verticalCompact={false}
+          compactType={null}
           onLayoutChange={layoutChangeHandler}
         >
-          <div key="a">CELL 1</div>
-          <div key="b">CELL 2</div>
-          <div key="c">CELL 3</div>
+          {layout && layout.map(item => createElement(item))}
         </GridLayout>
       </div>
     </div>
@@ -36,7 +78,8 @@ Sheet.propTypes = {
   format: PropTypes.oneOf([Format.A3, Format.A4, Format.A5, Format.LETTER, Format.LEGAL]),
   orientation: PropTypes.oneOf([Format.ORIENTATION_PORTRAIT, Format.ORIENTATION_LANDSCAPE]),
   layout: PropTypes.array,
-  layoutChangeHandler: PropTypes.func
+  layoutChangeHandler: PropTypes.func,
+  selectHandler: PropTypes.func
 }
 Sheet.defaultProps = {
   lock: false,
