@@ -51,6 +51,11 @@
   right: 0 !important;
 }
 
+.preview-container {
+  height: 100%;
+  width: 100%;
+}
+
 /** Paper sizes **/
 .A3               .sheet { width: 297mm; height: 419mm }
 .A3.LANDSCAPE     .sheet { width: 420mm; height: 296mm }

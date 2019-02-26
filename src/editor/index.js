@@ -1,14 +1,17 @@
-import React, { useReducer, useEffect } from 'react'
+import React, { useReducer, useEffect, Fragment } from 'react'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
 import { ImmortalStorage, IndexedDbStore, LocalStorageStore, SessionStorageStore } from 'immortal-db'
 import isEqual from 'lodash/isEqual'
 import find from 'lodash/find'
 import FroalaEditor from 'react-froala-wysiwyg'
+import JsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 import Ribbon from './Ribbon.react'
-import SubRibbon from './SubRibbon.react'
+import SubRibbon from '../../docs/SubRibbon.react'
 import Sheet from './Sheet.react'
+import Preview from './Preview.react'
 import Settings from './Settings.react'
 import * as Format from '../constants/FormatConstants'
 import { EDITOR_FEATURES, QUICKINSERT_BUTTONS, ALLOWED_STYLE_PROPS, KEY } from '../constants/EditorConstants'
@@ -31,6 +34,7 @@ const FROALA_CONFIG = {
 }
 
 const initialState = {
+  preview: false,
   lock: false,
   save: false,
   settings: false,
@@ -44,6 +48,8 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
+    case 'preview':
+      return { ...state, preview: action.value }
     case 'lock':
       return { ...state, lock: action.value }
     case 'save':
@@ -83,7 +89,7 @@ export default function Index() {
     fetchData()
   }, [])
 
-  const { lock, save, settings, name, format, orientation, layout, selectedCell, content } = state
+  const { preview, lock, save, settings, name, format, orientation, layout, selectedCell, content } = state
 
   async function handleSettingsSave(value) {
     await db.set('document', JSON.stringify({
@@ -166,14 +172,27 @@ export default function Index() {
     }
   }
 
+  function handlePreview() {
+    window.html2canvas = html2canvas
+
+    const input = document.getElementById('documentSheet')
+
+    const doc = new JsPDF(orientation, 'pt', format)
+    doc.html(input).then(() => doc.save('document.pdf'))
+
+    // dispatch({ type: 'preview', value: !preview })
+  }
+
   return (
     <div className="column-box index-container">
 
       <Ribbon />
 
       <SubRibbon
+        preview={preview}
         lock={lock}
         save={save}
+        previewHandler={handlePreview}
         lockHandler={handleLock}
         addHandler={addCellHandler}
         saveHandler={handleSave}
@@ -185,67 +204,77 @@ export default function Index() {
           <div className="split-main-content p-0">
             <div className="h-100">
 
-              <div className="editor-document-container column-box">
-
-                <div className="edit-view-header">Document</div>
-
-                <Sheet
-                  lock={lock}
+              {preview ? (
+                <Preview
                   format={format}
                   orientation={orientation}
                   layout={layout}
-                  layoutChangeHandler={handleLayoutChange}
-                  selectHandler={handleCellSelect}
                 />
-              </div>
+              ) : (
+                <Fragment>
+                  <div className="editor-document-container column-box">
 
-              <div className="editor-toolbox-container">
+                    <div className="edit-view-header">Document</div>
 
-                <div className="editor-toolbox-header">Template Settings</div>
+                    <Sheet
+                      lock={lock}
+                      format={format}
+                      orientation={orientation}
+                      layout={layout}
+                      layoutChangeHandler={handleLayoutChange}
+                      selectHandler={handleCellSelect}
+                    />
+                  </div>
 
-                <TextField
-                  required
-                  fullWidth
-                  disabled={!lock}
-                  value={name}
-                  label="Name"
-                  InputLabelProps={{ shrink: true }}
-                  onChange={handleNameChange}
-                />
+                  <div className="editor-toolbox-container">
 
-                {selectedCell && (
-                  <div className="m-t-20">
+                    <div className="editor-toolbox-header">Template Settings</div>
 
-                    <div className="editor-toolbox-content-label">Content</div>
-
-                    <FroalaEditor
-                      tag="textarea"
-                      config={FROALA_CONFIG}
-                      model={content || ''}
-                      onModelChange={handleContentChange}
+                    <TextField
+                      required
+                      fullWidth
+                      disabled={!lock}
+                      value={name}
+                      label="Name"
+                      InputLabelProps={{ shrink: true }}
+                      onChange={handleNameChange}
                     />
 
-                    <div className="m-t-10 flex-end-box align-center-box">
+                    {selectedCell && (
+                      <div className="m-t-20">
 
-                      <Button
-                        color="primary"
-                        onClick={discardHandler}
-                      >
-                        {'Discard'}
-                      </Button>
+                        <div className="editor-toolbox-content-label">Content</div>
 
-                      <Button
-                        disabled={selectedCell.content === content}
-                        color="primary"
-                        variant="contained"
-                        onClick={applyContentHandler}
-                      >
-                        {'Apply'}
-                      </Button>
-                    </div>
+                        <FroalaEditor
+                          tag="textarea"
+                          config={FROALA_CONFIG}
+                          model={content || ''}
+                          onModelChange={handleContentChange}
+                        />
+
+                        <div className="m-t-10 flex-end-box align-center-box">
+
+                          <Button
+                            color="primary"
+                            onClick={discardHandler}
+                          >
+                            {'Discard'}
+                          </Button>
+
+                          <Button
+                            disabled={selectedCell.content === content}
+                            color="primary"
+                            variant="contained"
+                            onClick={applyContentHandler}
+                          >
+                            {'Apply'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                </Fragment>
+              )}
             </div>
           </div>
         </div>

@@ -8,21 +8,10 @@ import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
 import * as Format from '../constants/FormatConstants'
+import { calculatePageWidth } from '../utils/FormatUtils'
 
 export default function Sheet({ lock, format, orientation, layout, layoutChangeHandler, selectHandler }) {
-  let width = 0
-
-  if (format === Format.A4) {
-    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1122 : 793
-  } else if (format === Format.A3) {
-    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1587 : 1122
-  } else if (format === Format.A5) {
-    width = orientation === Format.ORIENTATION_LANDSCAPE ? 793 : 559
-  } else if (format === Format.LETTER) {
-    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1058 : 816
-  } else if (format === Format.LEGAL) {
-    width = orientation === Format.ORIENTATION_LANDSCAPE ? 1349 : 816
-  }
+  const width = calculatePageWidth(format, orientation)
 
   function cellDeleteHandler(data) {
     layoutChangeHandler(filter(layout, item => item.i !== data.i))
@@ -53,7 +42,7 @@ export default function Sheet({ lock, format, orientation, layout, layoutChangeH
 
   return (
     <div className={`${format} ${orientation === Format.ORIENTATION_LANDSCAPE ? orientation : ''}`}>
-      <div className="sheet">
+      <div id="documentSheet" className="sheet">
         <GridLayout
           className="layout"
           preventCollision
