@@ -9,7 +9,7 @@ import JsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 
 import Ribbon from './Ribbon.react'
-import SubRibbon from '../../docs/SubRibbon.react'
+import SubRibbon from './SubRibbon.react'
 import Sheet from './Sheet.react'
 import Preview from './Preview.react'
 import Settings from './Settings.react'
@@ -178,7 +178,7 @@ export default function Index() {
     const input = document.getElementById('documentSheet')
 
     const doc = new JsPDF(orientation, 'pt', format)
-    doc.html(input).then(() => doc.save('document.pdf'))
+    doc.html(input, { html2canvas: { scale: 0.75 } }).then(() => doc.save('document.pdf'))
 
     // dispatch({ type: 'preview', value: !preview })
   }
