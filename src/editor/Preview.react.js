@@ -1,56 +1,64 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { Font, StyleSheet, Page, Text, View, Document, PDFViewer } from '@react-pdf/renderer'
+import JsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
+import Dialog from '@material-ui/core/Dialog'
+import AppBar from '@material-ui/core/AppBar'
+import Toolbar from '@material-ui/core/Toolbar'
+import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close'
+import Slide from '@material-ui/core/Slide'
 
-import { calculatePageWidth } from '../utils/FormatUtils'
+// fixes bug with jspdf html method
+window.html2canvas = html2canvas
 
-Font.register(
-  'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf',
-  { family: 'Roboto' },
-)
+function Transition(props) {
+  return <Slide direction="up" {...props} />
+}
 
-// x: 0, y: 0, w: 2, h: 2
+export default function Preview({ open, format, orientation, closeHandler }) {
+  const [output, setOutput] = useState('')
 
-const styles = StyleSheet.create({
-  page: { margin: 10, fontFamily: 'Roboto' }
-})
+  useEffect(() => {
+    if (format && orientation && open) {
+      const input = document.getElementById('documentSheet')
 
-export default function Preview({ format, orientation, layout }) {
-  const width = calculatePageWidth(format, orientation)
-  const columnWidth = width / 12
+      const doc = new JsPDF(orientation, 'pt', format)
+      doc.setProperties({ title: 'Document' })
 
-  function getViewStyle(item) {
-    return {
-      position: 'absolute',
-      left: (item.x * columnWidth) + 10,
-      top: item.y * 40,
-      width: item.w * columnWidth,
-      height: ((item.h - 1) * 40) + 30
+      doc.html(input, { html2canvas: { scale: 0.75 } })
+        .then(() => setOutput(doc.output('datauristring')))
     }
-  }
+  }, [format, orientation, open])
 
   return (
-    <PDFViewer className="preview-container">
-      <Document>
-        <Page
-          size={format}
-          orientation={orientation}
-          style={styles.page}
-          wrap={false}
-        >
-          {layout && layout.map(item => (
-            <View key={item.i} style={getViewStyle(item)}>
-              <Text>{item.content}</Text>
-            </View>
-          ))}
-        </Page>
-      </Document>
-    </PDFViewer>
+    <Dialog
+      fullScreen
+      open={open}
+      onClose={closeHandler}
+      TransitionComponent={Transition}
+    >
+
+      <AppBar>
+        <Toolbar variant="dense">
+          <IconButton color="inherit" onClick={closeHandler} aria-label="Close">
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      <iframe
+        className="preview-container"
+        title="PDF Output"
+        src={output}
+      />
+    </Dialog>
   )
 }
 
 Preview.propTypes = {
+  open: PropTypes.bool.isRequired,
   format: PropTypes.string,
   orientation: PropTypes.string,
-  layout: PropTypes.array
+  closeHandler: PropTypes.func.isRequired
 }
