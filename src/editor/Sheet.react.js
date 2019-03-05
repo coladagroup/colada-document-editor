@@ -23,7 +23,8 @@ const FROALA_CONFIG = {
   htmlAllowedStyleProps: ALLOWED_STYLE_PROPS,
   htmlUntouched: true,
   toolbarInline: true,
-  key: KEY
+  key: KEY,
+  placeholderText: 'Type here'
 }
 
 export default function Sheet() {

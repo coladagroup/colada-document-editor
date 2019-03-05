@@ -39,7 +39,10 @@ export default function SubRibbon() {
   }
 
   function addCellHandler() {
-    dispatch({ type: 'layout', value: [...layout, { i: uuidv1(), x: 0, y: 0, w: 2, h: 2 }] })
+    const cell = { i: uuidv1(), x: 0, y: 0, w: 2, h: 2 }
+    const value = layout ? [...layout, cell] : [cell]
+
+    dispatch({ type: 'layout', value })
   }
 
   function handleInteraction() {
