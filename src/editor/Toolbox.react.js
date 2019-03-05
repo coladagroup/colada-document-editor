@@ -1,5 +1,4 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import React, { useContext } from 'react'
 import Grid from '@material-ui/core/Grid'
 import TextField from '@material-ui/core/TextField'
 import FormControl from '@material-ui/core/FormControl'
@@ -7,17 +6,24 @@ import InputLabel from '@material-ui/core/InputLabel'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 
+import { DocumentsEditorContext } from './index'
 import * as Format from '../constants/FormatConstants'
 
-export default function Toolbox({
-  lock,
-  name,
-  format,
-  orientation,
-  nameChangeHandler,
-  formatChangeHandler,
-  orientationChangeHandler
-}) {
+export default function Toolbox() {
+  const { lock, name, format, orientation, dispatch } = useContext(DocumentsEditorContext)
+
+  function handleOrientationChange(e) {
+    dispatch({ type: 'orientation', value: e.target.value })
+  }
+
+  function handleFormatChange(e) {
+    dispatch({ type: 'format', value: e.target.value })
+  }
+
+  function handleNameChange(e) {
+    dispatch({ type: 'name', value: e.target.value })
+  }
+
   return (
     <div className="editor-toolbox-container">
 
@@ -33,7 +39,7 @@ export default function Toolbox({
             value={name}
             label="Name"
             InputLabelProps={{ shrink: true }}
-            onChange={nameChangeHandler}
+            onChange={handleNameChange}
           />
         </Grid>
 
@@ -42,7 +48,7 @@ export default function Toolbox({
             <InputLabel htmlFor="format-select">Format</InputLabel>
             <Select
               value={format}
-              onChange={formatChangeHandler}
+              onChange={handleFormatChange}
               inputProps={{ name: 'format', id: 'format-select' }}
             >
               <MenuItem value={Format.A4}>A4</MenuItem>
@@ -59,7 +65,7 @@ export default function Toolbox({
             <InputLabel htmlFor="orientation-select">Orientation</InputLabel>
             <Select
               value={orientation}
-              onChange={orientationChangeHandler}
+              onChange={handleOrientationChange}
               inputProps={{ name: 'orientation', id: 'orientation-select' }}
             >
               <MenuItem value={Format.ORIENTATION_PORTRAIT}>Portrait</MenuItem>
@@ -70,14 +76,4 @@ export default function Toolbox({
       </Grid>
     </div>
   )
-}
-
-Toolbox.propTypes = {
-  lock: PropTypes.bool.isRequired,
-  name: PropTypes.string,
-  format: PropTypes.string,
-  orientation: PropTypes.string,
-  nameChangeHandler: PropTypes.func.isRequired,
-  formatChangeHandler: PropTypes.func.isRequired,
-  orientationChangeHandler: PropTypes.func.isRequired
 }

@@ -1,13 +1,15 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+import React, { useContext } from 'react'
+import isEqual from 'lodash/isEqual'
+import find from 'lodash/find'
+import filter from 'lodash/filter'
 import GridLayout from 'react-grid-layout'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import FroalaEditor from 'react-froala-wysiwyg'
-import filter from 'lodash/filter'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
+import { DocumentsEditorContext } from './index'
 import * as Format from '../constants/FormatConstants'
 import { EDITOR_FEATURES, QUICKINSERT_BUTTONS, ALLOWED_STYLE_PROPS, KEY } from '../constants/EditorConstants'
 import { calculatePageWidth } from '../utils/FormatUtils'
@@ -24,15 +26,36 @@ const FROALA_CONFIG = {
   key: KEY
 }
 
-export default function Sheet({ lock, interaction, format, orientation, layout, layoutChangeHandler }) {
+export default function Sheet() {
+  const { lock, interaction, format, orientation, layout, dispatch } = useContext(DocumentsEditorContext)
+
   const width = calculatePageWidth(format, orientation)
 
+  function handleLayoutChange(newLayout, revertContent = true) {
+    if (layout && !isEqual(layout, newLayout)) {
+      dispatch({
+        type: 'layout',
+        value: !revertContent ? newLayout : newLayout.map((item) => {
+          let result = item
+
+          const prevItem = find(layout, data => data.i === item.i)
+
+          if (prevItem) {
+            result = { ...item, content: prevItem.content }
+          }
+
+          return result
+        })
+      })
+    }
+  }
+
   function handleCellDelete(data) {
-    layoutChangeHandler(filter(layout, item => item.i !== data.i), false)
+    handleLayoutChange(filter(layout, item => item.i !== data.i), false)
   }
 
   function handleContentChange(data, content) {
-    layoutChangeHandler(layout.map(item => item.i === data.i ? { ...item, content } : item), false)
+    handleLayoutChange(layout.map(item => item.i === data.i ? { ...item, content } : item), false)
   }
 
   function createElement(data) {
@@ -68,26 +91,11 @@ export default function Sheet({ lock, interaction, format, orientation, layout, 
           isDraggable={interaction}
           isResizable={interaction}
           compactType={null}
-          onLayoutChange={layoutChangeHandler}
+          onLayoutChange={handleLayoutChange}
         >
           {layout && layout.map(item => createElement(item))}
         </GridLayout>
       </div>
     </div>
   )
-}
-
-Sheet.propTypes = {
-  lock: PropTypes.bool,
-  interaction: PropTypes.bool,
-  format: PropTypes.oneOf([Format.A3, Format.A4, Format.A5, Format.LETTER, Format.LEGAL, '']),
-  orientation: PropTypes.oneOf([Format.ORIENTATION_PORTRAIT, Format.ORIENTATION_LANDSCAPE, '']),
-  layout: PropTypes.array,
-  layoutChangeHandler: PropTypes.func
-}
-Sheet.defaultProps = {
-  lock: false,
-  interaction: false,
-  format: Format.A4,
-  orientation: Format.ORIENTATION_PORTRAIT
 }
