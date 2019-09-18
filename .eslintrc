@@ -39,7 +39,8 @@
         "react/jsx-max-props-per-line": [1, { "maximum": 3 }],
         "react/jsx-curly-brace-presence": [0],
         "react/no-danger": [0],
-        "react/destructuring-assignment": [0]
+        "react/destructuring-assignment": [0],
+        "react/jsx-props-no-spreading": [0]
     },
     "env": {
         "browser": true,

@@ -2,9 +2,6 @@ import React from 'react'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { fade } from '@material-ui/core/styles/colorManipulator'
 
-import Editor from './editor'
-import './styles/base.scss'
-
 const theme = createMuiTheme({
   typography: {
     useNextVariants: true
@@ -62,13 +59,12 @@ const theme = createMuiTheme({
   }
 })
 
-/**
- * Main portal. Apply MUI theme customization here.
- */
-export default function Portal() {
+function ThemeContainer({ children }) {
   return (
     <MuiThemeProvider theme={theme}>
-      <Editor />
+      {children}
     </MuiThemeProvider>
   )
 }
+
+export default ThemeContainer

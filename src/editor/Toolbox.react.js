@@ -6,10 +6,10 @@ import InputLabel from '@material-ui/core/InputLabel'
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
 
-import { DocumentsEditorContext } from './index'
+import { DocumentsEditorContext } from './context'
 import * as Format from '../constants/FormatConstants'
 
-export default function Toolbox() {
+function Toolbox() {
   const { lock, name, format, orientation, dispatch } = useContext(DocumentsEditorContext)
 
   function handleOrientationChange(e) {
@@ -29,7 +29,7 @@ export default function Toolbox() {
 
       <div className="editor-toolbox-header">Template Settings</div>
 
-      <Grid container direction="column" spacing={16}>
+      <Grid container direction="column" spacing={4}>
 
         <Grid item>
           <TextField
@@ -77,3 +77,5 @@ export default function Toolbox() {
     </div>
   )
 }
+
+export default Toolbox

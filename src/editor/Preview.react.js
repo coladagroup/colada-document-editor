@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, forwardRef } from 'react'
 import JsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import Dialog from '@material-ui/core/Dialog'
@@ -8,16 +8,14 @@ import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import Slide from '@material-ui/core/Slide'
 
-import { DocumentsEditorContext } from './index'
+import { DocumentsEditorContext } from './context'
 
 // fixes bug with jspdf html method
 window.html2canvas = html2canvas
 
-function Transition(props) {
-  return <Slide direction="up" {...props} />
-}
+const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />)
 
-export default function Preview() {
+function Preview() {
   const { preview, format, orientation, dispatch } = useContext(DocumentsEditorContext)
 
   const [output, setOutput] = useState('')
@@ -62,3 +60,5 @@ export default function Preview() {
     </Dialog>
   )
 }
+
+export default Preview

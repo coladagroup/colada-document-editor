@@ -1,12 +1,14 @@
-import React, { useContext, Fragment } from 'react'
-import { ImmortalStorage, IndexedDbStore, LocalStorageStore, SessionStorageStore } from 'immortal-db'
+import React, { useContext } from 'react'
 import Button from '@material-ui/core/Button'
 import Tooltip from '@material-ui/core/Tooltip'
 import PreviewIcon from '@material-ui/icons/Visibility'
 import InteractionIcon from '@material-ui/icons/LockOpen'
 import LockIcon from '@material-ui/icons/Lock'
+import DeleteIcon from '@material-ui/icons/RemoveCircle'
+import filter from 'lodash/filter'
 
-import { DocumentsEditorContext } from './index'
+import db from '../shared/storage'
+import { DocumentsEditorContext } from './context'
 import EditIcon from '-!react-svg-loader!../svg/Edit.svg'
 import ExitIcon from '-!react-svg-loader!../svg/Exit.svg'
 import SaveIcon from '-!react-svg-loader!../svg/Save.svg'
@@ -15,10 +17,7 @@ import SaveDisabledIcon from '-!react-svg-loader!../svg/SaveDisabled.svg'
 
 const uuidv1 = require('uuid/v1')
 
-const stores = [IndexedDbStore, LocalStorageStore, SessionStorageStore]
-const db = new ImmortalStorage(stores)
-
-export default function SubRibbon() {
+function SubRibbon() {
   const {
     preview,
     lock,
@@ -28,9 +27,17 @@ export default function SubRibbon() {
     format,
     orientation,
     layout,
+    selected,
     dispatch,
     fetchData
   } = useContext(DocumentsEditorContext)
+
+  function handleDelete() {
+    const newLayout = filter(layout, item => item.i !== selected)
+
+    dispatch({ type: 'layout', value: newLayout })
+    dispatch({ type: 'select', value: null })
+  }
 
   async function handleSave() {
     await db.set('document', JSON.stringify({ name, format, orientation, layout }))
@@ -85,7 +92,7 @@ export default function SubRibbon() {
       </Button>
 
       {lock && (
-        <Fragment>
+        <>
 
           <Tooltip
             title={interaction ? 'Note: Cell content will become editable' : 'Note: Cell content will not be editable'}
@@ -109,14 +116,25 @@ export default function SubRibbon() {
 
           <Button
             color="primary"
+            disabled={!selected}
+            onClick={handleDelete}
+          >
+            <DeleteIcon />
+            <div className="nowrap m-l-10">DELETE CELL</div>
+          </Button>
+
+          <Button
+            color="primary"
             disabled={!save}
             onClick={handleSave}
           >
             {save ? <SaveIcon /> : <SaveDisabledIcon />}
             <div className="nowrap m-l-10">SAVE</div>
           </Button>
-        </Fragment>
+        </>
       )}
     </div>
   )
 }
+
+export default SubRibbon

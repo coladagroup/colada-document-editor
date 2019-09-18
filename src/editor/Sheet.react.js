@@ -1,39 +1,20 @@
 import React, { useContext } from 'react'
-import isEqual from 'lodash/isEqual'
 import find from 'lodash/find'
-import filter from 'lodash/filter'
-import GridLayout from 'react-grid-layout'
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
-import FroalaEditor from 'react-froala-wysiwyg'
+import { Responsive, WidthProvider } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
-import { DocumentsEditorContext } from './index'
+import { DocumentsEditorContext } from './context'
 import * as Format from '../constants/FormatConstants'
-import { EDITOR_FEATURES, QUICKINSERT_BUTTONS, ALLOWED_STYLE_PROPS, KEY } from '../constants/EditorConstants'
-import { calculatePageWidth } from '../utils/FormatUtils'
+import RichTextEditor from '../components/RichTextEditor'
 
-const FROALA_CONFIG = {
-  charCounterCount: false,
-  toolbarButtons: [...EDITOR_FEATURES],
-  quickInsertButtons: [...QUICKINSERT_BUTTONS],
-  linkAutoPrefix: '',
-  htmlRemoveTags: [],
-  htmlAllowedStyleProps: ALLOWED_STYLE_PROPS,
-  htmlUntouched: true,
-  toolbarInline: true,
-  key: KEY,
-  placeholderText: 'Type here'
-}
+const ResponsiveGridLayout = WidthProvider(Responsive)
 
-export default function Sheet() {
-  const { lock, interaction, format, orientation, layout, dispatch } = useContext(DocumentsEditorContext)
+function Sheet() {
+  const { lock, interaction, format, orientation, layout, selected, dispatch } = useContext(DocumentsEditorContext)
 
-  const width = calculatePageWidth(format, orientation)
-
-  function handleLayoutChange(newLayout, revertContent = true) {
-    if (layout && !isEqual(layout, newLayout)) {
+  function handleLayoutChange(newLayout, layouts, revertContent = true) {
+    if (layout && layouts) {
       dispatch({
         type: 'layout',
         value: !revertContent ? newLayout : newLayout.map((item) => {
@@ -51,30 +32,39 @@ export default function Sheet() {
     }
   }
 
-  function handleCellDelete(data) {
-    handleLayoutChange(filter(layout, item => item.i !== data.i), false)
-  }
-
   function handleContentChange(data, content) {
-    handleLayoutChange(layout.map(item => item.i === data.i ? { ...item, content } : item), false)
+    handleLayoutChange(layout.map(item => item.i === data.i ? { ...item, content } : item), [], false)
   }
 
-  function createElement(data) {
-    return lock ? (
-      <div key={data.i} data-grid={data} className="relative">
-        <FroalaEditor
-          tag="textarea"
-          config={FROALA_CONFIG}
-          model={data.content || ''}
+  function handleSelect(uid) {
+    return function select() {
+      dispatch({ type: 'select', value: uid })
+    }
+  }
+
+  function createElement(data, selectedTile) {
+    return (
+      <div
+        key={data.i}
+        data-grid={data}
+        tabIndex={0}
+        role="button"
+        className={`relative
+        ${lock ? 'tile-container' : ''}
+        ${lock && selectedTile ? 'tile-container__selected' : ''}
+        ${!lock ? 'tile-read-only-container' : ''}`}
+        onClick={handleSelect(data.i)}
+        onKeyPress={handleSelect(data.i)}
+      >
+        <RichTextEditor
+          text={data.content}
+          disabled={!lock || interaction}
+          config={{
+            toolbarInline: true,
+            zIndex: 2501,
+          }}
           onModelChange={model => handleContentChange(data, model)}
         />
-        <IconButton classes={{ root: 'cell-delete-button' }} onClick={() => handleCellDelete(data)}>
-          <CloseIcon />
-        </IconButton>
-      </div>
-    ) : (
-      <div key={data.i} data-grid={data}>
-        <div dangerouslySetInnerHTML={{ __html: data.content || '' }} />
       </div>
     )
   }
@@ -82,21 +72,21 @@ export default function Sheet() {
   return (
     <div className={`${format} ${orientation === Format.ORIENTATION_LANDSCAPE ? orientation : ''}`}>
       <div id="documentSheet" className="sheet">
-        <GridLayout
-          className="layout"
+        <ResponsiveGridLayout
           preventCollision
-          width={width}
-          layout={layout || []}
-          cols={12}
           rowHeight={30}
-          isDraggable={interaction}
-          isResizable={interaction}
+          isDraggable={lock && interaction}
+          isResizable={lock && interaction}
           compactType={null}
+          breakpoints={{ lg: 1200 }}
+          cols={{ lg: 12 }}
           onLayoutChange={handleLayoutChange}
         >
-          {layout && layout.map(item => createElement(item))}
-        </GridLayout>
+          {layout && layout.map(item => createElement(item, item.i === selected))}
+        </ResponsiveGridLayout>
       </div>
     </div>
   )
 }
+
+export default Sheet

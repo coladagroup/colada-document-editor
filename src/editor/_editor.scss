@@ -45,6 +45,25 @@
   page-break-after: always;
 }
 
+.tile-container {
+  border-width: 2px;
+  border-radius: 2px;
+  border-color: #EEE;
+  border-style: dashed;
+  outline: none;
+  cursor: pointer;
+  overflow: hidden;
+
+  &__selected {
+    border-color: #4556B7;
+  }
+}
+
+.tile-read-only-container {
+  outline: none;
+  overflow: hidden;
+}
+
 .cell-delete-button {
   position: absolute !important;
   top: 0 !important;

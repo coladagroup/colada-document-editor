@@ -2,6 +2,7 @@ const path = require('path')
 const HTMLPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 const ErrorOverlayPlugin = require('error-overlay-webpack-plugin')
+const FileManagerPlugin = require('filemanager-webpack-plugin')
 
 const config = {
   entry: ['@babel/polyfill', './src/index.js'],
@@ -86,6 +87,29 @@ const config = {
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    new FileManagerPlugin({
+      onStart: [
+        {
+          delete: [
+            './docs',
+            './build'
+          ]
+        }
+      ],
+      onEnd: [
+        {
+          copy: [
+            { source: './public/favicon.ico', destination: './docs' },
+            { source: './build/**/*.{html,js}', destination: './docs' }
+          ]
+        },
+        {
+          delete: [
+            './build'
+          ]
+        }
+      ]
+    }),
     new ErrorOverlayPlugin(),
     new webpack.ProvidePlugin({
       $: 'jquery',

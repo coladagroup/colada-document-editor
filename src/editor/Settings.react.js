@@ -13,7 +13,15 @@ import Button from '@material-ui/core/Button'
 
 import * as Format from '../constants/FormatConstants'
 
-export default function Settings({ open, format, orientation, closeHandler, saveHandler }) {
+const propTypes = {
+  open: PropTypes.bool,
+  format: PropTypes.string,
+  orientation: PropTypes.string,
+  closeHandler: PropTypes.func,
+  saveHandler: PropTypes.func
+}
+
+function Settings({ open, format, orientation, closeHandler, saveHandler }) {
   const [stateFormat, setFormat] = useState(format)
   const [stateOrientation, setOrientation] = useState(orientation)
   const [save, setSave] = useState(false)
@@ -54,7 +62,7 @@ export default function Settings({ open, format, orientation, closeHandler, save
           </Grid>
 
           <Grid item>
-            <Grid container spacing={32}>
+            <Grid container spacing={8}>
 
               <Grid item xs={6}>
                 <FormControl fullWidth>
@@ -111,10 +119,6 @@ export default function Settings({ open, format, orientation, closeHandler, save
   )
 }
 
-Settings.propTypes = {
-  open: PropTypes.bool,
-  format: PropTypes.string,
-  orientation: PropTypes.string,
-  closeHandler: PropTypes.func,
-  saveHandler: PropTypes.func
-}
+Settings.propTypes = propTypes
+
+export default Settings

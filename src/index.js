@@ -7,6 +7,6 @@ import 'froala-editor/js/froala_editor.pkgd.min'
 import 'froala-editor/css/froala_style.min.css'
 import 'froala-editor/css/froala_editor.pkgd.min.css'
 
-import Portal from './Portal.react'
+import Root from './Root.react'
 
-render(<Portal />, document.getElementById('root'))
+render(<Root />, document.getElementById('root'))

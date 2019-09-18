@@ -1,0 +1,40 @@
+#imageManager-1 {
+  visibility: hidden;
+}
+
+#imageManager-2 {
+  visibility: hidden;
+}
+
+.fr-wrapper {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.fr-toolbar {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.second-toolbar {
+  visibility: hidden !important;
+}
+
+.fr-box.fr-basic.fr-top {
+  height: 100% !important;
+  z-index: 1;
+}
+
+.inline-disabled-text {
+  height: 100%;
+  overflow-y: auto;
+  z-index: 1;
+
+  &__mobile {
+    overflow-y: hidden;
+  }
+}
+
+.fr-toolbar.fr-inline {
+  background-color: #FFF !important;
+}
