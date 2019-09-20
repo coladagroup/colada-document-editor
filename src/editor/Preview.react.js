@@ -13,6 +13,8 @@ import { DocumentsEditorContext } from './context'
 // fixes bug with jspdf html method
 window.html2canvas = html2canvas
 
+const SCALE_FACTOR = 2
+
 const Transition = forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />)
 
 function Preview() {
@@ -26,16 +28,27 @@ function Preview() {
       doc.setProperties({ title: 'Document' })
 
       const input = document.querySelector('.react-grid-layout')
-      const canvasWidth = input.clientWidth * 2
-      const canvasHeight = input.clientHeight * 2
+      const sheet = document.querySelector('.sheet')
 
-      html2canvas(input, { scale: 2, width: canvasWidth, height: canvasHeight }).then(canvas => {
+      const canvasWidth = input.clientWidth * SCALE_FACTOR
+      const canvasHeight = sheet.clientHeight * SCALE_FACTOR
+
+      const originalHeight = input.style.height
+      input.style.height = `${sheet.clientHeight}px`
+
+      html2canvas(input, {
+        scale: SCALE_FACTOR,
+        width: canvasWidth,
+        height: canvasHeight,
+      }).then(canvas => {
         const width = doc.internal.pageSize.getWidth()
         const height = doc.internal.pageSize.getHeight()
 
         doc.addImage(canvas.toDataURL('image/jpeg'), 'JPEG', 0, 0, width, height)
 
         setOutput(doc.output('bloburi'))
+
+        input.style.height = originalHeight
       })
     }
   }, [format, orientation, preview])
