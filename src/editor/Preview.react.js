@@ -22,13 +22,21 @@ function Preview() {
 
   useEffect(() => {
     if (format && orientation && preview) {
-      const input = document.getElementById('documentSheet')
-
-      const doc = new JsPDF(orientation, 'pt', format)
+      const doc = new JsPDF(orientation, 'mm', format)
       doc.setProperties({ title: 'Document' })
 
-      doc.html(input, { html2canvas: { scale: 0.75 } })
-        .then(() => setOutput(doc.output('datauristring')))
+      const input = document.querySelector('.react-grid-layout')
+      const canvasWidth = input.clientWidth * 2
+      const canvasHeight = input.clientHeight * 2
+
+      html2canvas(input, { scale: 2, width: canvasWidth, height: canvasHeight }).then(canvas => {
+        const width = doc.internal.pageSize.getWidth()
+        const height = doc.internal.pageSize.getHeight()
+
+        doc.addImage(canvas.toDataURL('image/jpeg'), 'JPEG', 0, 0, width, height)
+
+        setOutput(doc.output('bloburi'))
+      })
     }
   }, [format, orientation, preview])
 

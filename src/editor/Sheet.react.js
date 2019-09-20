@@ -1,20 +1,21 @@
 import React, { useContext } from 'react'
 import find from 'lodash/find'
-import { Responsive, WidthProvider } from 'react-grid-layout'
+import GridLayout from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 
 import { DocumentsEditorContext } from './context'
 import * as Format from '../constants/FormatConstants'
 import RichTextEditor from '../components/RichTextEditor'
-
-const ResponsiveGridLayout = WidthProvider(Responsive)
+import { calculatePageWidth } from '../utils/FormatUtils'
 
 function Sheet() {
   const { lock, interaction, format, orientation, layout, selected, dispatch } = useContext(DocumentsEditorContext)
 
-  function handleLayoutChange(newLayout, layouts, revertContent = true) {
-    if (layout && layouts) {
+  const width = calculatePageWidth(format, orientation)
+
+  function handleLayoutChange(newLayout, revertContent = true) {
+    if (layout) {
       dispatch({
         type: 'layout',
         value: !revertContent ? newLayout : newLayout.map((item) => {
@@ -33,7 +34,7 @@ function Sheet() {
   }
 
   function handleContentChange(data, content) {
-    handleLayoutChange(layout.map(item => item.i === data.i ? { ...item, content } : item), [], false)
+    handleLayoutChange(layout.map(item => item.i === data.i ? { ...item, content } : item), false)
   }
 
   function handleSelect(uid) {
@@ -71,19 +72,21 @@ function Sheet() {
 
   return (
     <div className={`${format} ${orientation === Format.ORIENTATION_LANDSCAPE ? orientation : ''}`}>
-      <div id="documentSheet" className="sheet">
-        <ResponsiveGridLayout
+      <div className="sheet">
+        <GridLayout
           preventCollision
+          className="layout"
+          width={width}
+          layout={layout || []}
+          cols={12}
           rowHeight={30}
           isDraggable={lock && interaction}
           isResizable={lock && interaction}
           compactType={null}
-          breakpoints={{ lg: 1200 }}
-          cols={{ lg: 12 }}
           onLayoutChange={handleLayoutChange}
         >
           {layout && layout.map(item => createElement(item, item.i === selected))}
-        </ResponsiveGridLayout>
+        </GridLayout>
       </div>
     </div>
   )

@@ -4025,7 +4025,7 @@ html2canvas@1.0.0-alpha.12:
   dependencies:
     css-line-break "1.0.1"
 
-html2canvas@1.0.0-rc.3:
+html2canvas@^1.0.0-rc.3:
   version "1.0.0-rc.3"
   resolved "https://coladadev.jfrog.io/coladadev/api/npm/npm/html2canvas/-/html2canvas-1.0.0-rc.3.tgz#1de88b073f6bcaa6954ca1edfb46da13b258b038"
   integrity sha1-HeiLBz9ryqaVTKHt+0baE7JYsDg=
